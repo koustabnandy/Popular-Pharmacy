@@ -137,6 +137,7 @@ export function ProtectedRoute({
   if (!user) {
     if (typeof window !== "undefined") window.location.href = "/"
     return null
+    //hello
   }
   if (!allowed.includes(user.role)) {
     if (typeof window !== "undefined") window.location.href = "/"
