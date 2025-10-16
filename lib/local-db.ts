@@ -18,6 +18,7 @@ export function localdb() {
     getMedicineById,
     addMedicine,
     recordSale,
+    getAllSales,
     getKpis,
     getBestSellers,
     getSalesTrend,
@@ -61,12 +62,16 @@ function ensureSeed() {
   }
 }
 
-function mkMed(name: string, supplier: string, cost: number, price: number, qty: number, th: number): Medicine {
-  return { id: uid("med"), name, supplier, wholesaleCost: cost, price, stockQty: qty, reorderThreshold: th }
+function mkMed(name: string, supplier: string, cost: number, price: number, qty: number, th: number, pack = "10 Tabs", batch = "ABC123", exp = "12/2025", hsn = "3004"): Medicine {
+  return { id: uid("med"), name, supplier, wholesaleCost: cost, price, stockQty: qty, reorderThreshold: th, pack, batch, exp, hsn }
 }
 
 function getAllMedicines() {
   return read().medicines
+}
+
+function getAllSales() {
+  return read().sales
 }
 
 function searchMedicines(q: string) {
@@ -88,6 +93,10 @@ function addMedicine(input: {
   price: number
   quantity: number
   reorderThreshold: number
+  pack?: string
+  batch?: string
+  exp?: string
+  hsn?: string
 }) {
   const db = read()
   const existing = db.medicines.find((m) => m.name.toLowerCase() === input.name.toLowerCase())
@@ -97,6 +106,10 @@ function addMedicine(input: {
     existing.wholesaleCost = input.wholesaleCost
     existing.price = input.price
     existing.reorderThreshold = input.reorderThreshold
+    if (input.pack) existing.pack = input.pack
+    if (input.batch) existing.batch = input.batch
+    if (input.exp) existing.exp = input.exp
+    if (input.hsn) existing.hsn = input.hsn
   } else {
     db.medicines.push({
       id: uid("med"),
@@ -106,23 +119,30 @@ function addMedicine(input: {
       price: input.price,
       stockQty: input.quantity,
       reorderThreshold: input.reorderThreshold,
+      pack: input.pack || "10 Tabs",
+      batch: input.batch || "ABC123",
+      exp: input.exp || "12/2025",
+      hsn: input.hsn || "3004",
     })
   }
   write(db)
 }
 
-function recordSale(items: CartItem[]) {
+function recordSale(items: CartItem[], paymentMethod: string) {
   const db = read()
   // Decrement stock and compute totals
   let subtotal = 0
   let tax = 0
+  let discount = 0
   let profit = 0
   for (const i of items) {
     const m = db.medicines.find((mm) => mm.id === i.medicineId)
     if (!m) throw new Error("Medicine missing")
     if (i.qty > m.stockQty) throw new Error("Insufficient stock")
-    subtotal += i.unitPrice * i.qty
-    tax += (i.unitPrice * i.qty * i.taxRate) / 100
+    const line = i.unitPrice * i.qty
+    subtotal += line
+    tax += (line * i.taxRate) / 100
+    discount += (line * i.discount) / 100
     profit += (i.unitPrice - m.wholesaleCost) * i.qty
     m.stockQty -= i.qty
   }
@@ -132,8 +152,10 @@ function recordSale(items: CartItem[]) {
     items,
     subtotal,
     tax,
-    total: subtotal + tax,
+    discount,
+    total: subtotal + tax - discount,
     profit,
+    paymentMethod,
   }
   db.sales.unshift(sale)
   write(db)

@@ -3,6 +3,7 @@
 import { useAuth, ProtectedRoute } from "@/components/auth/auth-context"
 import { TopNav } from "@/components/nav/top-nav"
 import { BillingForm } from "@/components/worker/billing-form"
+import { BillingHistory } from "@/components/worker/billing-history"
 
 export default function WorkerPage() {
   return (
@@ -31,6 +32,7 @@ function WorkerContent() {
         </div>
         <div className="mt-6">
           <BillingForm />
+          <BillingHistory />
         </div>
       </section>
     </>

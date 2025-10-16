@@ -11,11 +11,15 @@ export type User = {
 export type Medicine = {
   id: string
   name: string
-  supplier: string
+  supplier: string // MFG
   wholesaleCost: number
-  price: number
+  price: number // MRP
   stockQty: number
   reorderThreshold: number
+  pack: string // PACK
+  batch: string // BATCH
+  exp: string // EXP
+  hsn: string // HSN
 }
 
 export type CartItem = {
@@ -24,6 +28,7 @@ export type CartItem = {
   qty: number
   unitPrice: number
   taxRate: number
+  discount: number // percentage
   // for display/debugging:
   stockAtSale: number
 }
@@ -34,6 +39,8 @@ export type Sale = {
   items: CartItem[]
   subtotal: number
   tax: number
+  discount: number
   total: number
   profit: number // computed from (price - cost) * qty
+  paymentMethod: string
 }

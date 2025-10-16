@@ -113,13 +113,7 @@ export function InventoryTable() {
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Add New Medicine</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => window.print()}>Print Inventory</Button>
-              <Button variant="outline" onClick={() => alert("Download feature coming soon!")}>Download Inventory</Button>
-            </div>
-          </div>
+          <CardTitle>Add New Medicine</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={addMedicine} className="grid gap-3">
